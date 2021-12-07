@@ -1,0 +1,15 @@
+NODE all
+SQL >
+
+    SELECT * FROM ds_visits_origins
+
+
+
+NODE composed
+SQL >
+
+    SELECT visit_date, fingerprint, language, country   FROM ds_visits_origins 
+    group by visit_date, fingerprint, language, country
+    having sum(visits) > 0
+
+

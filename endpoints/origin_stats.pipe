@@ -1,0 +1,13 @@
+DESCRIPTION >
+    Returns stats per day
+
+NODE stats
+SQL >
+    %
+    select
+        visit_date as date,
+        sumIf(visits, country = {{String(country, 'es', description="Source country", required=True)}}) as fps_country
+    from ds_origins_stats
+    where
+        visit_date >= now() - INTERVAL 28 DAY
+    group by date

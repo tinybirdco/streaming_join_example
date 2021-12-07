@@ -1,0 +1,33 @@
+DESCRIPTION >
+    When origin data arrives after visits those visits have already been matched with the previous closest origin. We need to discount the previous match, which is done by this pipe, and match the visits with the new origin, which is done by origins_2visits_origins_mv pipe.
+
+NODE origins_last_day
+SQL >
+    SELECT
+        fingerprint AS fingerprint,
+        visit_date AS visit_date,
+        visits_date_origin AS visits_date_origin,
+        country AS country,
+        language AS language
+    FROM ds_visits_origins
+    WHERE visit_date >= (now() - toIntervalHour(24))
+
+NODE retrieve
+SQL >
+    SELECT
+        v.visit_date AS visit_date,
+        o.visit_date AS visits_date_origin,
+        v.fingerprint AS fingerprint,
+        v.language AS language,
+        v.country AS country,
+        -1 AS visits
+    FROM ds_origins AS o
+    LEFT JOIN origins_last_day AS v
+    ON (o.fingerprint = v.fingerprint)
+    WHERE
+            (v.visit_date >= (now() - toIntervalHour(24)))
+        AND (o.visit_date <= v.visit_date)
+        AND (o.visit_date >= v.visits_date_origin)
+
+TYPE materialized
+DATASOURCE ds_visits_origins

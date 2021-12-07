@@ -1,0 +1,12 @@
+DESCRIPTION >
+    Datasource to store origins, visits sessions.
+
+SCHEMA >
+    `visit_date` DateTime,
+    `fingerprint` String,
+    `country` LowCardinality(String)
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMMDD(visit_date)"
+ENGINE_SORTING_KEY "visit_date, fingerprint"
+ENGINE_TTL visit_date + INTERVAL 36 DAY

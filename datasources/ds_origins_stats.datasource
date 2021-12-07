@@ -1,0 +1,13 @@
+DESCRIPTION >
+    Datasource to store origins stats.
+
+SCHEMA >
+    `visit_date` DateTime,
+    `language` LowCardinality(String),
+    `country` LowCardinality(String),
+    `visits` Int64
+
+ENGINE "SummingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(visit_date)"
+ENGINE_SORTING_KEY "visit_date, language, country"
+ENGINE_TTL visit_date + INTERVAL 36 DAY

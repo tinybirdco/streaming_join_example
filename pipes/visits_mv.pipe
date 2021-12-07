@@ -1,0 +1,34 @@
+DESCRIPTION >
+    Joins each visit with its origin data. This MV uses the closest visit_date from the origins to match using an ASOF JOIN. The destination datasource contains all the information we need plus the visit_date of the origin, named visit_date_origin. This field is necessary to identify to which origin the visit has been matched and fix counting errors when data does not arrives in order.
+
+    This view assumes data is ordered which means origins arrive before visits. This is not always true but it is fixed with the origins_2visits_origins_fix_order_mv. The visit_date_origin field is used for that purpose.
+
+
+NODE last_day_visits
+SQL >
+    select vis.fingerprint as key
+    from ds_visits vis
+    where vis.visit_date >= now() - INTERVAL 2 DAY
+
+NODE retrieve
+SQL > 
+    SELECT
+        v.visit_date visit_date,
+        o.visit_date AS visits_date_origin,
+        v.fingerprint fingerprint,
+        v.language language,
+        o.country country,
+        1 AS visits
+    FROM ds_visits AS v
+    ASOF LEFT JOIN (
+        select 
+            ori.visit_date visit_date,
+            ori.fingerprint fingerprint,
+            ori.country country
+        from ds_origins ori
+        where ds_origins.fingerprint in (select * from last_day_visits)
+    ) AS o ON (v.fingerprint = o.fingerprint) AND (v.visit_date >= o.visit_date)
+
+
+TYPE materialized
+DATASOURCE ds_visits_origins

@@ -1,0 +1,15 @@
+DESCRIPTION >
+    This pipe materializes data to compute the aggregations for origins.
+
+NODE retrieve
+SQL >
+    select
+        toStartOfDay(visit_date) as visit_date,
+        language,
+        country,
+        sum(visits) as visits
+    from ds_visits_origins
+    group by visit_date, language, country
+
+TYPE materialized
+DATASOURCE ds_origins_stats
